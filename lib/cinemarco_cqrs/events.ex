@@ -5,4 +5,9 @@ defmodule CinemarcoCqrs.Events do
     field :name, String.t()
     field :seats, [pos_integer()]
   end
+
+  typedstruct module: SeatsReserved do
+    field :screening_name, String.t()
+    field :seats, [pos_integer()]
+  end
 end

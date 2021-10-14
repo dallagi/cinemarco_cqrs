@@ -17,6 +17,11 @@ defmodule CinemarcoCqrs.ScreeningState do
   end
 
   def apply(%__MODULE__{}, %ScreeningCreated{name: name, seats: seats}) do
+    seats =
+      seats
+      |> Enum.map(fn seat -> {seat, true} end)
+      |> Enum.into(%{})
+
     %__MODULE__{name: name, seats: seats}
   end
 end
