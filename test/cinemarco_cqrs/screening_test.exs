@@ -1,7 +1,7 @@
 defmodule CinemarcoCqrs.ScreeningTest do
   use ExUnit.Case, async: true
 
-  alias CinemarcoCqrs.{CommandHandler, EventStore, Events, Screening}
+  alias CinemarcoCqrs.CommandHandler
   alias CinemarcoCqrs.Commands.{CreateScreening, ReserveSeats}
   alias CinemarcoCqrs.Events.{ScreeningCreated, SeatsReserved}
 
@@ -21,6 +21,12 @@ defmodule CinemarcoCqrs.ScreeningTest do
     given([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3]}])
     |> whenever(%ReserveSeats{screening_name: "Titanic", seats: [1]})
     |> then_expect([%SeatsReserved{screening_name: "Titanic", seats: [1]}])
+  end
+
+  test "cannot reserve seats when they have already been reserved" do
+    given([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3]}, %SeatsReserved{screening_name: "Titanic", seats: [1]}])
+    |> whenever(%ReserveSeats{screening_name: "Titanic", seats: [1]})
+    |> then_expect([])
   end
 
   defp given(events), do: events

@@ -13,22 +13,18 @@ defmodule CinemarcoCqrs.Screening do
     end
   end
 
-  def reserve_seats(state, publish, screening_name, seats) do
-    case state do
-      %ScreeningState{name: nil} ->
-        :error
+  def reserve_seats(%ScreeningState{name: nil}, _, _, _), do: :error
 
-      %ScreeningState{seats: screening_seats} ->
-        if available?(state, seats) do
-          publish.(%SeatsReserved{screening_name: screening_name, seats: seats})
-          :ok
-        else
-          :error
-      end
+  def reserve_seats(%ScreeningState{seats: screening_seats}, publish, screening_name, seats) do
+    if available?(screening_seats, seats) do
+      publish.(%SeatsReserved{screening_name: screening_name, seats: seats})
+      :ok
+    else
+      :error
     end
   end
 
-  defp available?(%ScreeningState{} = state, seats) do
-    true
+  defp available?(screening_seats, seats) do
+    Enum.all?(seats, &Map.get(screening_seats, &1, false))
   end
 end

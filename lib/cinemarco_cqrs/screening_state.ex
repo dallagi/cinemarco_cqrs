@@ -1,11 +1,11 @@
-alias CinemarcoCqrs.Events.ScreeningCreated
+alias CinemarcoCqrs.Events.{ScreeningCreated, SeatsReserved}
 
 defmodule CinemarcoCqrs.ScreeningState do
   use TypedStruct
 
   typedstruct do
     field(:name, String.t())
-    field(:seats, %{pos_integer() => boolean()})
+    field(:seats, %{pos_integer() => available? :: boolean()})
   end
 
   def new(history) do
@@ -23,5 +23,13 @@ defmodule CinemarcoCqrs.ScreeningState do
       |> Enum.into(%{})
 
     %__MODULE__{name: name, seats: seats}
+  end
+
+  def apply(%__MODULE__{} = state, %SeatsReserved{seats: reserved_seats}) do
+    reservations = reserved_seats
+    |> Enum.map(&{&1, false})
+    |> Enum.into(%{})
+
+    %__MODULE__{state | seats: Map.merge(state.seats, reservations)}
   end
 end
