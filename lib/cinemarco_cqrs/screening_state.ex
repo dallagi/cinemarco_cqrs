@@ -6,6 +6,7 @@ defmodule CinemarcoCqrs.ScreeningState do
   typedstruct do
     field(:name, String.t())
     field(:seats, %{pos_integer() => available? :: boolean()})
+    field(:starts_at, DateTime.t())
   end
 
   def new(history) do
@@ -16,13 +17,13 @@ defmodule CinemarcoCqrs.ScreeningState do
     )
   end
 
-  def apply(%__MODULE__{}, %ScreeningCreated{name: name, seats: seats}) do
+  def apply(%__MODULE__{}, %ScreeningCreated{name: name, seats: seats, starts_at: starts_at}) do
     seats =
       seats
       |> Enum.map(fn seat -> {seat, true} end)
       |> Enum.into(%{})
 
-    %__MODULE__{name: name, seats: seats}
+    %__MODULE__{name: name, seats: seats, starts_at: starts_at}
   end
 
   def apply(%__MODULE__{} = state, %SeatsReserved{seats: reserved_seats}) do

@@ -4,6 +4,7 @@ defmodule CinemarcoCqrs.Commands do
   typedstruct module: CreateScreening do
     field :name, String.t()
     field :seats, [pos_integer()]
+    field :starts_at, DateTime.t()
   end
 
   typedstruct module: ReserveSeats do

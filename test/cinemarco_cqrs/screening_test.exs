@@ -7,7 +7,11 @@ defmodule CinemarcoCqrs.ScreeningTest do
 
   test "creates screening" do
     given([])
-    |> whenever(%CreateScreening{name: "Titanic", seats: [1, 2, 3]})
+    |> whenever(%CreateScreening{
+      name: "Titanic",
+      seats: [1, 2, 3],
+      starts_at: minutes_from_now(60)
+    })
     |> then_expect([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3]}])
   end
 
@@ -18,13 +22,22 @@ defmodule CinemarcoCqrs.ScreeningTest do
   end
 
   test "can reserve seats when they are available" do
-    given([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3]}])
+    given([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3], starts_at: minutes_from_now(60)}])
     |> whenever(%ReserveSeats{screening_name: "Titanic", seats: [1]})
     |> then_expect([%SeatsReserved{screening_name: "Titanic", seats: [1]}])
   end
 
   test "cannot reserve seats when they have already been reserved" do
-    given([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3]}, %SeatsReserved{screening_name: "Titanic", seats: [1]}])
+    given([
+      %ScreeningCreated{name: "Titanic", seats: [1, 2, 3], starts_at: minutes_from_now(60)},
+      %SeatsReserved{screening_name: "Titanic", seats: [1]}
+    ])
+    |> whenever(%ReserveSeats{screening_name: "Titanic", seats: [1]})
+    |> then_expect([])
+  end
+
+  test "cannot reserve tickets after 15 mins before screening starts" do
+    given([%ScreeningCreated{name: "Titanic", seats: [1, 2, 3], starts_at: minutes_from_now(5)}])
     |> whenever(%ReserveSeats{screening_name: "Titanic", seats: [1]})
     |> then_expect([])
   end
@@ -51,4 +64,6 @@ defmodule CinemarcoCqrs.ScreeningTest do
       0 -> nil
     end
   end
+
+  defp minutes_from_now(amount), do: DateTime.add(DateTime.utc_now(), amount * 60, :second)
 end
